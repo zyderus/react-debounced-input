@@ -1,23 +1,44 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import { useState } from "react";
 
 function App() {
+  const [search, setSearch] = useState([]);
+
+  const debounce = (func, timer) => {
+    let timeId = null;
+    return (...args) => {
+      if (timeId) clearTimeout(timeId);
+      timeId = setTimeout(() => func(...args), timer);
+    };
+  };
+
+  const handleChange = e => {
+    const { value } = e.target;
+    fetch(` https://demo.dataverse.org/api/search?q=${value}`)
+      .then(res => res.json())
+      .then(json => setSearch(json.data.items));
+  };
+
+  const debouncedHandleChange = debounce(handleChange, 500);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className='App'>
+      <h1>Hello Ninja</h1>
+      <input
+        type='text'
+        name='search'
+        placeholder='search...'
+        onChange={debouncedHandleChange}
+      />
+      {search?.length > 0 && (
+        <div>
+          {search?.map((el, i) => (
+            <div key={i}>
+              <span>{el.name}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
